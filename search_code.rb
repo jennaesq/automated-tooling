@@ -5,7 +5,19 @@ require 'csv'
 require 'optparse'
 require 'csv'
 require 'octokit'
+require 'rest-more'
+
 require_relative 'octokit_utils'
+
+
+#Need to implement use the rest-more gem, which uses rest-core to make concurrent requests.
+# Github Example:
+#g = RC::Github.new :access_token => 'if you have the token',
+#                   :log_method => method(:puts)
+#
+#p [g.me, g.get('users/godfat')]
+#p g.all('users/godfat/repos').size # get all repositories across all pages
+#END Github Example
 
 options = {}
 options[:oauth] = ENV['GITHUB_COMMUNITY_TOKEN'] if ENV['GITHUB_COMMUNITY_TOKEN']
