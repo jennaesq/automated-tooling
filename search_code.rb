@@ -75,41 +75,46 @@ else
     #utilizing client.search_code octokit method
     query = "#{options[:search]} in:file repo:#{options[:namespace]}/#{r}"
     puts "\nProcessing Repo: #{r}, Query: #{query}"
+    begin
+      results ||= (util.search_code(r, query, options)).to_h
+      items   ||= results[:items]
 
-    results ||= (util.search_code(r, query, options)).to_h
-    items   ||= results[:items]
+      #Looks like we can't specify the dang branch, only fork=true; Need to investigate
+      #octokit/search_code restrictions, and blow right past them.
+      #utilizing client.branches octokit method
+      #branches = util.list_branches(options[:namespace],r, options)
 
-    #Looks like we can't specify the dang branch, only fork=true; Need to investigate
-    #octokit/search_code restrictions, and blow right past them.
-    #utilizing client.branches octokit method
-    #branches = util.list_branches(options[:namespace],r, options)
-
-    #Are the results good, is there anything to work with?
-    if results.count < 3
-      puts "\t...skipping #{r}: expecting 3 returned #{results.count}"
-      next #Next repo
-    elsif results[:incomplete_results] == "false"
-      puts "\t...skipping #{r}: 'incomplete_results' for #{query}"
-      next #Next repo
-    elsif results[:total_count] == "0"
-      puts "\t...skipping #{r}: 'total_count' is 0 for #{query}"
-      next #Next repo
-    elsif items.empty?
-      puts "\t...skipping #{r}: no results found for #{query}"
-      next #Next repo
-    end
-
-    #collect path,html_url,sha from results
-    #Hash[results[:items].collect {|d| [d[:path], "#{d[:html_url]}, #{d[:sha]}"]}]
-
-    #Create a csv file, for ease of use.
-    CSV.open("results_#{options[:search]}.csv", "w") do |csv|
-      csv << ["repo", "path", "url", "sha"]
-      items.each do |i|
-        csv << [r, i[:path], i[:html_url], i[:sha]]
+      #Are the results good, is there anything to work with?
+      if results.count < 3
+        puts "\t...skipping #{r}: expecting 3 returned #{results.count}"
+        next #Next repo
+      elsif results[:incomplete_results] == "false"
+        puts "\t...skipping #{r}: 'incomplete_results' for #{query}"
+        next #Next repo
+      elsif results[:total_count] == "0"
+        puts "\t...skipping #{r}: 'total_count' is 0 for #{query}"
+        next #Next repo
+      elsif items.empty?
+        puts "\t...skipping #{r}: no results found for #{query}"
+        next #Next repo
       end
-    end #END csv
 
+      #collect path,html_url,sha from results
+      #Hash[results[:items].collect {|d| [d[:path], "#{d[:html_url]}, #{d[:sha]}"]}]
+
+      #Create a csv file, for ease of use.
+      CSV.open("results_#{options[:search]}.csv", "w") do |csv|
+        csv << ["repo", "path", "url", "sha"]
+        items.each do |i|
+          csv << [r, i[:path], i[:html_url], i[:sha]]
+        end
+      end #END csv
+
+    rescue
+      puts "Exception Class: #{ e.class.name }"
+      puts "Exception Message: #{ e.message }"
+      puts "Exception Backtrace: #{ e.backtrace }"
+    end
   end #END repos loop
 end # END repos.empty? loop
 

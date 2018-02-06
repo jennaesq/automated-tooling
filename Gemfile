@@ -6,7 +6,7 @@ else
   gem 'octokit'
 end
 
-gem 'gruff'
+gem 'rest-more'
 
 group 'development' do
   gem 'pry'
