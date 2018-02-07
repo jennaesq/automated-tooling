@@ -34,7 +34,13 @@ class OctokitUtils
   end
 
   def search_code(repo, query, options)
-    results ||= client.search_code(query)
+    begin
+      results ||= client.search_code(query)
+    rescue StandardError => e
+      puts "Exception Class: #{ e.class.name }"
+      puts "Exception Message: #{ e.message }"
+      puts "Exception Backtrace: #{ e.backtrace }"
+    end
     return results
 
   end

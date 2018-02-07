@@ -75,7 +75,6 @@ else
     #utilizing client.search_code octokit method
     query = "#{options[:search]} in:file repo:#{options[:namespace]}/#{r}"
     puts "\nProcessing Repo: #{r}, Query: #{query}"
-    begin
       results ||= (util.search_code(r, query, options)).to_h
       items   ||= results[:items]
 
@@ -110,11 +109,6 @@ else
         end
       end #END csv
 
-    rescue
-      puts "Exception Class: #{ e.class.name }"
-      puts "Exception Message: #{ e.message }"
-      puts "Exception Backtrace: #{ e.backtrace }"
-    end
   end #END repos loop
 end # END repos.empty? loop
 
