@@ -9,16 +9,6 @@ require 'rest-more'
 
 require_relative 'octokit_utils'
 
-
-#Need to implement use the rest-more gem, which uses rest-core to make concurrent requests.
-# Github Example:
-#g = RC::Github.new :access_token => 'if you have the token',
-#                   :log_method => method(:puts)
-#
-#p [g.me, g.get('users/godfat')]
-#p g.all('users/godfat/repos').size # get all repositories across all pages
-#END Github Example
-
 options = {}
 options[:oauth] = ENV['GITHUB_COMMUNITY_TOKEN'] if ENV['GITHUB_COMMUNITY_TOKEN']
 
@@ -71,44 +61,53 @@ if repos.empty?
   puts "Exiting #{__FILE__}: No repos found for ${options[:namespace]}"
   exit
 else
-  repos.each do |r| #BEGIN repos loop
+  puts "\nTotal repos to process: #{repos.count}."
+  repos.each_with_index do |r,r_index| #BEGIN repos loop
+    #index begins with 0; so, add 1
+    index_plus_one = r_index + 1
+
+    if index_plus_one % 30 == 0
+      puts "\tSleeping 61 seconds for 'github search rate-limit' of 30 requests/minute; https://developer.github.com/v3/search/#rate-limit"
+      sleep(61)
+    end
+
     #utilizing client.search_code octokit method
     query = "#{options[:search]} in:file repo:#{options[:namespace]}/#{r}"
     puts "\nProcessing Repo: #{r}, Query: #{query}"
-      results ||= (util.search_code(r, query, options)).to_h
-      items   ||= results[:items]
+    results ||= (util.search_code(r, query, options)).to_h
+    items   ||= results[:items]
 
-      #Looks like we can't specify the dang branch, only fork=true; Need to investigate
-      #octokit/search_code restrictions, and blow right past them.
-      #utilizing client.branches octokit method
-      #branches = util.list_branches(options[:namespace],r, options)
+    #Looks like we can't specify the dang branch, only fork=true; Need to investigate
+    #octokit/search_code restrictions, and blow right past them.
+    #utilizing client.branches octokit method
+    #branches = util.list_branches(options[:namespace],r, options)
 
-      #Are the results good, is there anything to work with?
-      if results.count < 3
-        puts "\t...skipping #{r}: expecting 3 returned #{results.count}"
-        next #Next repo
-      elsif results[:incomplete_results] == "false"
-        puts "\t...skipping #{r}: 'incomplete_results' for #{query}"
-        next #Next repo
-      elsif results[:total_count] == "0"
-        puts "\t...skipping #{r}: 'total_count' is 0 for #{query}"
-        next #Next repo
-      elsif items.empty?
-        puts "\t...skipping #{r}: no results found for #{query}"
-        next #Next repo
+    #Evaluate the results, is there anything to work with?
+    if results.count < 3
+      puts "\t...skipping #{r}: expecting 3 returned #{results.count}"
+      next #Next repo
+    elsif results[:incomplete_results] == "false"
+      puts "\t...skipping #{r}: 'incomplete_results' for #{query}"
+      next #Next repo
+    elsif results[:total_count] == "0"
+      puts "\t...skipping #{r}: 'total_count' is 0 for #{query}"
+      next #Next repo
+    elsif items.empty?
+      puts "\t...skipping #{r}: no results found for #{query}"
+      next #Next repo
+    end
+
+    #collect path,html_url,sha from results
+    #Hash[results[:items].collect {|d| [d[:path], "#{d[:html_url]}, #{d[:sha]}"]}]
+
+    #Create a csv file, for ease of use.
+    CSV.open("results_#{options[:search]}.csv", "w") do |csv|
+      csv << ["repo", "path", "url", "sha"]
+      items.each do |i|
+        csv << [r, i[:path], i[:html_url], i[:sha]]
       end
 
-      #collect path,html_url,sha from results
-      #Hash[results[:items].collect {|d| [d[:path], "#{d[:html_url]}, #{d[:sha]}"]}]
-
-      #Create a csv file, for ease of use.
-      CSV.open("results_#{options[:search]}.csv", "w") do |csv|
-        csv << ["repo", "path", "url", "sha"]
-        items.each do |i|
-          csv << [r, i[:path], i[:html_url], i[:sha]]
-        end
-      end #END csv
-
+    end #END csv
   end #END repos loop
 end # END repos.empty? loop
 

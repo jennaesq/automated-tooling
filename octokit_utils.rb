@@ -11,6 +11,13 @@ class OctokitUtils
     @client = Octokit::Client.new(:access_token => "#{access_token}")
     client.user.login
 
+    #possible to authenticated rateLimit of 30 (unauthenticated 10)
+    #Exception Class: Octokit::TooManyRequests
+    #g = RC::Github.new :access_token => "#{access_token}",
+    #               :log_method => method(:puts)
+    #p [g.me, g.get('users/godfat')]
+    #p g.all('users/godfat/repos').size # get all repositories across all pages
+
   end
 
   def list_repos(organization, options)
