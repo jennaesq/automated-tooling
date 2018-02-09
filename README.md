@@ -28,13 +28,13 @@ An Example Run
 
 An example for running search_code on all available user repos:
 
-With GITHUB_COMMUNITY_TOKEN environment variable set:
+  With GITHUB_COMMUNITY_TOKEN environment variable set:
 
-  'bundle exec ruby ./search_code.rb -s artifactory --puppetlabs'
+    'bundle exec ruby ./search_code.rb -s artifactory --puppetlabs'
 
-Without GITHUB_COMMUNITY_TOKEN environment variable set:
+  Without GITHUB_COMMUNITY_TOKEN environment variable set:
 
-  'bundle exec ruby ./search_code.rb -s artifactory --puppetlabs -t (ACCESS TOKEN HERE)'
+    'bundle exec ruby ./search_code.rb -s artifactory --puppetlabs -t (ACCESS TOKEN HERE)'
 
 Pull Requests
 --------------
