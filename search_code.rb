@@ -67,7 +67,7 @@ else
     index_plus_one = r_index + 1
 
     if index_plus_one % 30 == 0
-      puts "\tSleeping 61 seconds for 'github search rate-limit' of 30 requests/minute; https://developer.github.com/v3/search/#rate-limit"
+      puts "\nSleeping 61 seconds for 'github search rate-limit' of 30 requests/minute; https://developer.github.com/v3/search/#rate-limit"
       sleep(61)
     end
 
