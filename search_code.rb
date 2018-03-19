@@ -72,7 +72,7 @@ else
     end
 
     #utilizing client.search_code octokit method
-    query = "#{options[:search]} in:file repo:#{options[:namespace]}/#{r}"
+    query = "\"#{options[:search]}\" in:file repo:#{options[:namespace]}/#{r}"
     puts "\nProcessing Repo: #{r}, Query: #{query}"
     results ||= (util.search_code(r, query, options)).to_h
     items   ||= results[:items]
