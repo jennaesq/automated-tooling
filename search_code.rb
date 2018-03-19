@@ -19,6 +19,7 @@ parser = OptionParser.new do |opts|
   opts.on('-n', '--namespace NAME', 'GitHub namespace. Required.') { |v| options[:namespace] = v }
   opts.on('-t', '--oauth-token TOKEN', 'OAuth token. Required.') { |v| options[:oauth] = v }
   opts.on('-r', '--repo-regex REGEX', 'Repository regex') { |v| options[:repo_regex] = v }
+  opts.on('-v', '--verbose') { options[:verbose] = true }
 
   # default filters
   opts.on('--puppetlabs', 'Select Puppet Labs\' modules') {
@@ -67,13 +68,13 @@ else
     index_plus_one = r_index + 1
 
     if index_plus_one % 30 == 0
-      puts "\nSleeping 61 seconds for 'github search rate-limit' of 30 requests/minute; https://developer.github.com/v3/search/#rate-limit"
+      puts "\nSleeping 61 seconds for 'github search rate-limit' of 30 requests/minute; https://developer.github.com/v3/search/#rate-limit" if options[:verbose]
       sleep(61)
     end
 
     #utilizing client.search_code octokit method
     query = "#{options[:search]} in:file repo:#{options[:namespace]}/#{r}"
-    puts "\nProcessing Repo: #{r}, Query: #{query}"
+    puts "\nProcessing Repo: #{r}, Query: #{query}" if options[:verbose]
     results ||= (util.search_code(r, query, options)).to_h
     items   ||= results[:items]
 
@@ -84,17 +85,19 @@ else
 
     #Evaluate the results, is there anything to work with?
     if results.count < 3
-      puts "\t...skipping #{r}: expecting 3 returned #{results.count}"
+      puts "\t...skipping #{r}: expecting 3 returned #{results.count}" if options[:verbose]
       next #Next repo
     elsif results[:incomplete_results] == "false"
-      puts "\t...skipping #{r}: 'incomplete_results' for #{query}"
+      puts "\t...skipping #{r}: 'incomplete_results' for #{query}" if options[:verbose]
       next #Next repo
     elsif results[:total_count] == "0"
-      puts "\t...skipping #{r}: 'total_count' is 0 for #{query}"
+      puts "\t...skipping #{r}: 'total_count' is 0 for #{query}" if options[:verbose]
       next #Next repo
     elsif items.empty?
-      puts "\t...skipping #{r}: no results found for #{query}"
+      puts "\t...skipping #{r}: no results found for #{query}" if options[:verbose]
       next #Next repo
+    else
+      puts "\nFound matches processing repo: #{r}, query: #{query}"
     end
 
     #collect path,html_url,sha from results
